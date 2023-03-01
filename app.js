@@ -5,11 +5,13 @@ require("dotenv/config");
 
 const usersRoute = require("./src/Routes/users");
 const constactsRoute = require("./src/Routes/contacts");
+const verifytoken = require("./src/verify_token");
 
 const app = express();
 
 app.use(bodyParser.json());
-app.use("/api/user", usersRoute);
+app.use("/api/users", usersRoute);
+app.use("/api/contacts", verifytoken);
 app.use("/api/contacts", constactsRoute);
 
 mongoose.set("strictQuery", false);
@@ -26,4 +28,4 @@ mongoose
     console.log(error + " failed to connect");
   });
 
-app.listen(3001);
+app.listen(3000);
