@@ -96,7 +96,9 @@ router.delete("/:contactId", async (req, res) => {
     if (req.params.contactId == null)
       return res.status(400).json({ message: "invalid contact id" });
     // DB operation
-    const deleteResult = await Contacts.deleteOne(req.params.contactId);
+    const deleteResult = await Contacts.deleteOne({
+      _id: req.params.contactId,
+    });
     res.json(deleteResult);
     //send response
   } catch (error) {
@@ -106,9 +108,6 @@ router.delete("/:contactId", async (req, res) => {
 
 router.delete("/", async (req, res) => {
   try {
-    //validation
-    if (req.params.contactId == null)
-      return res.status(400).json({ message: "invalid contact id" });
     // DB operation
     const deleteResult = await Contacts.deleteMany({});
     res.json(deleteResult);
