@@ -21,7 +21,9 @@ router.post("/register", async (req, res) => {
     // check user already exist
     const emailAlreadyExist = await Users.findOne({ email: req.body.email });
     if (emailAlreadyExist)
-      return res.status(200).json({ message: "Email already exist" });
+      return res
+        .status(400)
+        .json({ message: "User already exist, Please login" });
 
     // hash Password
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -35,9 +37,12 @@ router.post("/register", async (req, res) => {
 
     // save in DB
     const savedData = await user.save();
-    res.status(200).json({ message: "created an user for id " + user._id });
+    if (!savedData)
+      return res.status(500).json({ message: "Registration failed" });
+
+    res.json({ userId: savedData._id });
   } catch (error) {
-    res.status(400).json({ message: error });
+    res.status(500).json({ message: error });
   }
 });
 
@@ -50,7 +55,7 @@ router.post("/login", async (req, res) => {
 
     // check email already exist
     const user = await Users.findOne({ email: req.body.email });
-    if (!user) return res.status(200).json({ message: "Email does not exist" });
+    if (!user) return res.status(400).json({ message: "User does not exist" });
 
     // check for valid password
     const validPassword = await bcrypt.compare(
@@ -58,16 +63,14 @@ router.post("/login", async (req, res) => {
       user.password
     );
     if (!validPassword)
-      return res.status(200).json({ message: "password is incorrect" });
+      return res.status(400).json({ message: "Please check your password" });
 
     // generate auth token
     const accesstoken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
-    res
-      .header("auth_token", accesstoken)
-      .json({ message: "auth_token : " + accesstoken });
+    res.header("auth_token", accesstoken).json({ userData: user });
   } catch (error) {
-    res.status(400).json({ message: error });
+    res.status(500).json({ message: error });
   }
 });
 

@@ -7,7 +7,8 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // DB operation
-    const contacts = await Contacts.find();
+    const userId = req.user._id;
+    const contacts = await Contacts.find({userId : userId});
     res.json(contacts);
     //send response
   } catch (error) {
@@ -47,6 +48,7 @@ router.post("/", async (req, res) => {
 
     // convert to contacts object
     const contacts = new Contacts({
+      userId: req.user._id,
       name: req.body.name,
       phoneNumber: req.body.phoneNumber,
     });
@@ -109,7 +111,7 @@ router.delete("/:contactId", async (req, res) => {
 router.delete("/", async (req, res) => {
   try {
     // DB operation
-    const deleteResult = await Contacts.deleteMany({});
+    const deleteResult = await Contacts.deleteMany({userId : userId});
     res.json(deleteResult);
     //send response
   } catch (error) {
