@@ -8,9 +8,13 @@ router.get("/", async (req, res) => {
   try {
     // DB operation
     const userId = req.user._id;
-    const contacts = await Contacts.find({userId : userId});
-    res.json(contacts);
+    const contacts = await Contacts.find({ userId: userId });
+
+    if (!contacts)
+      return res.status(500).json({ message: "sonething went wrong" });
+
     //send response
+    res.json(contacts);
   } catch (error) {
     res.status(400).json({ message: error });
   }
@@ -40,26 +44,32 @@ router.post("/", async (req, res) => {
     )
       return res.status(400).json({ message: "invalid data" });
 
+    const userId = req.user._id;
     const phoneAlreadyExist = await Contacts.findOne({
+      userId: userId,
       phoneNumber: req.body.phoneNumber,
     });
     if (phoneAlreadyExist)
-      return res.status(200).json({ message: "contact already exist" });
+      return res.status(400).json({ message: "contact already exist" });
 
     // convert to contacts object
-    const contacts = new Contacts({
+    const contact = new Contacts({
       userId: req.user._id,
       name: req.body.name,
       phoneNumber: req.body.phoneNumber,
     });
 
     // DB operation
-    const savedContact = await contacts.save();
+    const savedContact = await contact.save();
+    if (!savedContact)
+      return res.status(500).json({ message: "sonething went wrong" });
+
+    const contacts = await Contacts.find({ userId: userId });
 
     //send response
-    res.json(savedContact);
+    res.json(contacts);
   } catch (error) {
-    res.status(400).json({ message: error });
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -84,11 +94,15 @@ router.patch("/:contactId", async (req, res) => {
       { _id: req.params.contactId },
       { $set: { name: req.body.name, phoneNumber: req.body.phoneNumber } }
     );
+    if (!updatedContact)
+      return res.status(500).json({ message: "something went wrong" });
+    const userId = req.user._id;
+    const contacts = await Contacts.find({ userId: userId });
 
     //send response
-    res.json(updatedContact);
+    res.json(contacts);
   } catch (error) {
-    res.status(400).json({ message: error });
+    res.status(500).json({ message: "something went wrong" });
   }
 });
 
@@ -101,8 +115,14 @@ router.delete("/:contactId", async (req, res) => {
     const deleteResult = await Contacts.deleteOne({
       _id: req.params.contactId,
     });
-    res.json(deleteResult);
+
+    if (!deleteResult)
+      return res.status(500).json({ message: "something went wrong" });
+    const userId = req.user._id;
+    const contacts = await Contacts.find({ userId: userId });
+
     //send response
+    res.json(contacts);
   } catch (error) {
     res.status(400).json({ message: error });
   }
@@ -111,9 +131,8 @@ router.delete("/:contactId", async (req, res) => {
 router.delete("/", async (req, res) => {
   try {
     // DB operation
-    const deleteResult = await Contacts.deleteMany({userId : userId});
+    const deleteResult = await Contacts.deleteMany({ userId: userId });
     res.json(deleteResult);
-    //send response
   } catch (error) {
     res.status(400).json({ message: error });
   }

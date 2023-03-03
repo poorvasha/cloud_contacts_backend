@@ -40,9 +40,10 @@ router.post("/register", async (req, res) => {
     if (!savedData)
       return res.status(500).json({ message: "Registration failed" });
 
-    res.json({ userId: savedData._id });
-  } catch (error) {
-    res.status(500).json({ message: error });
+    res.json({ userId: savedData });
+  } catch (exception) {
+    console.log(exception);
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -68,9 +69,10 @@ router.post("/login", async (req, res) => {
     // generate auth token
     const accesstoken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
-    res.header("auth_token", accesstoken).json({ userData: user });
+    res.json({ accesstoken: accesstoken, userData: user });
   } catch (error) {
-    res.status(500).json({ message: error });
+    console.log(exception);
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
